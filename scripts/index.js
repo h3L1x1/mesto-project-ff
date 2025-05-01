@@ -8,12 +8,13 @@
 
 // @todo: Вывести карточки на страницу
 
+const cardTemplate  = document.querySelector('#card-template');
+const placesList = document.querySelector('.places__list');
+
 function createCard(cardData, deleteCard) {
-
-  const templateElement  = document.getElementById('card-template').content.cloneNode(true);
-
+  const templateElement = cardTemplate.content.cloneNode(true);
   const cardTitle = templateElement.querySelector('.card__title');
-  const cardImage = templateElement.querySelector('.card__image');
+  const cardImage = templateElement.querySelector('.card__image');      
   const deleteBtn = templateElement.querySelector('.card__delete-button');
   const cardElement = templateElement.querySelector('.card');
 
@@ -32,7 +33,7 @@ function deleteCard(cardElement) {
   cardElement.remove(); 
 }
 
-const placesList = document.querySelector('.places__list');
+
 initialCards.forEach((cardData) => {
   const cardElement = createCard(cardData, deleteCard);
   placesList.appendChild(cardElement);
