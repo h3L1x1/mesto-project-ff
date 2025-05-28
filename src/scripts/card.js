@@ -1,4 +1,4 @@
- export function createCard(cardData, deleteCard, imageClickHandler, likeClickHandler) {
+ export function createCard(cardData, deleteCard, imageClickHandler, likeClickHandler)  {
   const cardTemplate  = document.querySelector('#card-template');
   const templateElement = cardTemplate.content.cloneNode(true);
   const cardTitle = templateElement.querySelector('.card__title');
