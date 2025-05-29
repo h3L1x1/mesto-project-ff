@@ -17,10 +17,3 @@ export function handleEscClose(evt) {
     }
   }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    const popups = document.querySelectorAll('.popup'); 
-    popups.forEach(popup => {
-        popup.classList.add('popup_is-animated');
-    });
-});

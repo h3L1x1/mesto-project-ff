@@ -7,6 +7,13 @@ import logo from './images/logo.svg'
 const logoImage = document.getElementById('logo__image');
 logoImage.src = logo
 
+document.addEventListener('DOMContentLoaded', () => {
+    const popups = document.querySelectorAll('.popup'); 
+    popups.forEach(popup => {
+        popup.classList.add('popup_is-animated');
+    });
+});
+
 // @todo: Темплейт карточки
 
 // @todo: DOM узлы
@@ -71,14 +78,14 @@ allCloseBtns.forEach(closeBtn => {
   closeBtn.addEventListener('click', () => {
       const popUp = closeBtn.closest('.popup');
       if (popUp) {
-          closePopUp(popUp, profilePopUp, nameInput, jobInput);
+          closePopUp(popUp);
       }
   });
 });
 
 profilePopUp.addEventListener('click', (evt) => {
   if (evt.target === profilePopUp) {
-    closePopUp(profilePopUp, profilePopUp, nameInput, jobInput);
+    closePopUp(profilePopUp);
   }
 });
 
@@ -102,13 +109,6 @@ profileCardsPopUp.addEventListener('click', (evt) => {
 const cardForm = document.forms['new-place'];
 const imagePopUp = document.querySelector('.popup_type_image')
 
-function cardHandleFormSubmit(evt) {
-  evt.preventDefault();
-closePopUp(profileCardsPopUp);
-}
-
-cardForm.addEventListener('submit', cardHandleFormSubmit);
-
 cardForm.addEventListener('submit', (evt) => {
   evt.preventDefault();
 
@@ -121,6 +121,7 @@ cardForm.addEventListener('submit', (evt) => {
   placesList.prepend(newCard);
 
   cardForm.reset();
+  closePopUp(profileCardsPopUp);
     
 })
 
