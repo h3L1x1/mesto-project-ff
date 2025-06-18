@@ -13,7 +13,20 @@
 
   deleteBtn.addEventListener('click', () => { 
     deleteCard(cardElement);
+
+    fetch('https://nomoreparties.co/v1/wff-cohort-41/cards/cardId', {
+
+      method: 'DELETE',
+  headers: {
+    authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699'
+  }
+})
+  .then(res => res.json())
+  .then((result) => {
+    console.log(result);
+  });
 });
+
   cardImage.addEventListener('click', () => {
   imageClickHandler(cardImage);
 });
@@ -26,7 +39,7 @@
 }
 
 export  function deleteCard(cardElement) {
-  cardElement.remove(); 
+  cardElement.remove();  
 }
 
 export function likeClickHandler(likeButton) {

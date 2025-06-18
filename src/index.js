@@ -1,6 +1,7 @@
 import { createCard, deleteCard, likeClickHandler } from "./scripts/card.js";
-import { closePopUp, openPopUp } from "./scripts/modal.js";
+import { closePopUp, openPopUp, } from "./scripts/modal.js";
 import { initialCards } from "./scripts/cards.js"
+import { showError, hideError, enableValidation, setEventListeners, checkInputValidity, clearValidation } from "./scripts/validation.js";
 import "./pages/index.css";
 import logo from './images/logo.svg'
 
@@ -70,7 +71,19 @@ profileForm.addEventListener('submit', profileHandleFormSubmit);
 profileEditBtn.addEventListener('click', () => {
   nameInput.value = nameProfileTitle.textContent;
   jobInput.value =  descriptionProfile.textContent;
-  openPopUp(profilePopUp)
+  openPopUp(profilePopUp, profileForm);
+
+  fetch('https://nomoreparties.co/v1/wff-cohort-41/users/me', {
+  method: 'PATCH',
+  headers: {
+    authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: nameInput.value,
+    about: jobInput.value,
+  })
+}); 
 });
 
 
@@ -96,7 +109,7 @@ const profileCardsBtn = document.querySelector('.profile__add-button');
 const profileCardsPopUp = document.querySelector('.popup_type_new-card');
 
 
-profileCardsBtn.addEventListener('click', () => openPopUp(profileCardsPopUp));
+profileCardsBtn.addEventListener('click', () => openPopUp(profileCardsPopUp, profileForm));
 
 profileCardsPopUp.addEventListener('click', (evt) => {
   if (evt.target === profileCardsPopUp) {
@@ -122,6 +135,18 @@ cardForm.addEventListener('submit', (evt) => {
 
   cardForm.reset();
   closePopUp(profileCardsPopUp);
+
+  fetch('https://nomoreparties.co/v1/wff-cohort-41/cards', {
+  method: 'POST',
+  headers: {
+    authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: cardName,
+    link: linkCard,
+  })
+}); 
     
 })
 
@@ -130,6 +155,63 @@ imagePopUp.addEventListener('click', (evt) => {
     closePopUp(imagePopUp);
   }
 })
+
+// validation
+
+function hasInvalidInput(inputList) {
+  return inputList.some((inputElement) => {
+
+     if (inputElement.value === "") {
+    return !inputElement.validity.valid; 
+  }
+
+    const nameRegex = /^[a-zA-Zа-яА-ЯёЁ\s-]+$/;
+
+    if (inputElement.type === 'text' && (inputElement.name === 'name' || inputElement.name === 'description' || inputElement.name === 'place-name')) {
+      if (!nameRegex.test(inputElement.value)) {
+        showError(inputElement);
+        return true; 
+      }
+    }
+
+    return !inputElement.validity.valid; 
+  });
+}
+
+export function toggleButtonState(inputList, buttonElement) {
+  if (hasInvalidInput(inputList)) {
+    buttonElement.disabled = true;
+    buttonElement.classList.add('button_inactive');
+  } else {
+    buttonElement.disabled = false;
+    buttonElement.classList.remove('button_inactive');
+  }
+}
+
+enableValidation();
+
+//api 
+
+  fetch('https://nomoreparties.co/v1/wff-cohort-41/users/me', {
+  headers: {
+    authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699'
+  }
+})
+  .then(res => res.json())
+  .then((result) => {
+    console.log(result);
+  });
+
+
+   fetch('https://nomoreparties.co/v1/wff-cohort-41/cards', {
+  headers: {
+    authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699'
+  }
+})
+  .then(res => res.json())
+  .then((result) => {
+    console.log(result);
+  });
 
 
 
