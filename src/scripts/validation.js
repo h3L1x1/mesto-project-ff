@@ -109,5 +109,7 @@ export const enableValidation = () => {
   });
 
   toggleButtonState(inputList, buttonElement);
+
+  
 }
 

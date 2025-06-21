@@ -21,10 +21,26 @@
       </header>
       <main class="content">
         <section class="profile page__section">
-          <div
-            class="profile__image"
-            style="background-image: url(<%=require('./images/avatar.jpg')%>)"
-          ></div>
+          <div class="profile__image-wrapper">
+            <div
+              class="profile__image"
+              style="background-image: url(<%=require('./images/avatar.jpg')%>)"
+            ></div>
+            <svg
+              width="26"
+              height="26"
+              viewBox="0 0 26 26"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              class="profile__img-svg"
+            >
+              <path
+                d="M26 3.45351L6.76981 22.7932L3.33585 19.2903L22.517 0L26 3.45351ZM0 26L5.10189 24.4706L1.52075 21.0171L0 26Z"
+                fill="white"
+              />
+            </svg>
+          </div>
+
           <div class="profile__info">
             <h1 class="profile__title">Жак-Ив Кусто</h1>
             <button class="profile__edit-button" type="button"></button>
@@ -71,6 +87,29 @@
             <span
               class="edit__profile-description-input-error form__input-error"
               id="description-error"
+            ></span>
+            <button type="submit" class="button popup__button">
+              Сохранить
+            </button>
+          </form>
+        </div>
+      </div>
+      <div class="popup popup_type_profile__image">
+        <div class="popup__content">
+          <button type="button" class="popup__close"></button>
+          <h3 class="popup__title">Обновить аватар</h3>
+          <form class="popup__form" name="edit-avatar" novalidate>
+            <input
+              type="url"
+              name="link"
+              id="link"
+              class="popup__input popup__input_type_url"
+              placeholder="Ссылка на картинку"
+              required
+            />
+            <span
+              class="link-input-error form__input-error"
+              id="link-error"
             ></span>
             <button type="submit" class="button popup__button">
               Сохранить

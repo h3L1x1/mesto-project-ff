@@ -7,6 +7,13 @@
   background-size: cover;
   background-position: center;
   margin: 0 29px 0 0;
+  position: relative;
+  transition: 0.3s;
+}
+
+.profile__image-wrapper:hover .profile__image {
+  filter: brightness(20%);
+  cursor: pointer;
 }
 
 @media screen and (max-width: 740px) {
@@ -20,3 +27,20 @@
     margin-right: 0;
   }
 }
+
+.profile__image-wrapper {
+  position: relative;
+}
+
+.profile__img-svg {
+  position: absolute;
+  top: 50%;
+  right: 50%;
+  cursor: pointer;
+  display: none;
+}
+
+.profile__image-wrapper:hover .profile__img-svg {
+  display: block;
+}
+
