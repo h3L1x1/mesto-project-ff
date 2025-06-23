@@ -1,12 +1,32 @@
 
+const config = {
+  baseUrl: 'https://nomoreparties.co/v1/wff-cohort-41',
+  headers: {
+    authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699',
+    'Content-Type': 'application/json'
+  }
+};
+
+function checkResponse(res) {
+  if (!res.ok) {
+    return Promise.reject(`Ошибка: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function loadProfile() {
+  return fetch(`${config.baseUrl}/users/me`, {
+    headers: config.headers
+  })
+  .then(checkResponse);
+};
+
 export async function addCardToServer(name, link) {
   try {
-    const res = await fetch('https://nomoreparties.co/v1/wff-cohort-41/cards', {
+    const res = await fetch(`${config.baseUrl}/cards`, {
       method: 'POST',
-      headers: {
-        authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699',
-        'Content-Type': 'application/json'
-      },
+      headers: config.headers,
+
       body: JSON.stringify({ name, link })
     });
 
@@ -19,47 +39,12 @@ export async function addCardToServer(name, link) {
   }
 }
 
-export async function getCurrentUserId() {
-  try {
-    const res = await fetch('https://nomoreparties.co/v1/wff-cohort-41/users/me', {
-      headers: {
-        authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699'
-      }
-    });
-    if (!res.ok) throw new Error(`Ошибка: ${res.status}`);
-    const data = await res.json();
-    return data._id;
-  } catch (err) {
-    console.error('Ошибка загрузки пользователя:', err);
-    throw err;
-  }
-}
-
-export async function getProfileData() {
-  try {
-    const response = await fetch('https://nomoreparties.co/v1/wff-cohort-41/users/me', {
-      headers: {
-        authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699'
-      }
-    });
-    if (!response.ok) {
-      throw new Error(`Ошибка: ${response.status}`);
-    }
-    return await response.json();
-  } catch (err) {
-    console.error('Ошибка загрузки профиля:', err);
-    throw err;
-  }
-}
-
 export async function changeProfileData(name, about) {
   try {
-    const response = await fetch('https://nomoreparties.co/v1/wff-cohort-41/users/me', {
+    const response = await fetch(`${config.baseUrl}/users/me`, {
       method: 'PATCH',
-      headers: {
-        authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699',
-        'Content-Type': 'application/json'
-      },
+      headers: config.headers,
+
       body: JSON.stringify({
         name: name,
         about: about
@@ -78,12 +63,10 @@ export async function changeProfileData(name, about) {
 }
 
 export async function changeAvatarData(img) {
-  const response = await fetch('https://nomoreparties.co/v1/wff-cohort-41/users/me/avatar', {
+  const response = await fetch(`${config.baseUrl}/users/me/avatar`, {
     method: 'PATCH',
-    headers: {
-      authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699',
-      'Content-Type': 'application/json'
-    },
+    headers: config.headers,
+
     body: JSON.stringify({
       avatar: img,
     })
@@ -94,25 +77,30 @@ export async function changeAvatarData(img) {
   } return response.json();
 };
 
-export async function loadCards() {
-  try {
-    const response = await fetch('https://nomoreparties.co/v1/wff-cohort-41/cards', {
-      headers: {
-        authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699'
-      }
-    });
-    return await response.json();
-  } catch (err) {
-    console.error('Ошибка загрузки карточек:', err);
-    return [];
-  }
+export  async function loadCards()   {
+  const res = await fetch(`${config.baseUrl}/cards`, {
+    headers: config.headers
+  });
+  return checkResponse(res);
 };
 
-export function renderLoading(isLoading, button, text = 'Сохранить', loadingText = 'Сохранение...') {
-  button.textContent = isLoading ? loadingText : text;
-  button.disabled = isLoading;
+export async function ownerDeleteCard(cardId) {
+  return fetch(`${config.baseUrl}/cards/${cardId}`, {
+        method: 'DELETE',
+        headers: config.headers
+      })
+      .then(res => {
+    if (!res.ok) throw new Error(`Ошибка ${res.status}`);
+    return res.json();
+  });
 }
 
+export async function loadLikeCounter(cardId, like) {
+  return fetch (`${config.baseUrl}/cards/likes/${cardId}`, {
+    method: like ? 'DELETE' : 'PUT',
+    headers: config.headers
+  }).then(checkResponse);
+}
 
 
 

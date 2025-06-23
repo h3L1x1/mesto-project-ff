@@ -1,19 +1,34 @@
 import { createCard, deleteCard, likeClickHandler } from "./scripts/card.js";
 import { closePopUp, openPopUp, } from "./scripts/modal.js";
-import { addCardToServer, changeProfileData, renderLoading, getProfileData, loadCards, getCurrentUserId, changeAvatarData} from "./scripts/api.js";
-import { showError,  enableValidation} from "./scripts/validation.js";
+import { addCardToServer, changeProfileData, loadCards, changeAvatarData, loadProfile} from "./scripts/api.js";
+import { clearValidation, enableValidation } from "./scripts/validation.js";
 import "./pages/index.css";
 import logo from './images/logo.svg'
+
+const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'button_inactive',
+  inputErrorClass: 'popup__input-type-error',
+  errorClass: 'form__input-error-active',
+  validationRegex: /^[a-zA-Zа-яА-ЯёЁ\s-]+$/,
+  validationMessages: {
+    regexMismatch: "Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы"
+  }
+};
 
 const logoImage = document.getElementById('logo__image');
 logoImage.src = logo
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const popups = document.querySelectorAll('.popup'); 
     popups.forEach(popup => {
         popup.classList.add('popup_is-animated');
     });
 });
+
+enableValidation(validationConfig);
 
 
 const placesList = document.querySelector('.places__list');
@@ -29,37 +44,25 @@ function imageClickHandler(cardData) {
     openPopUp(popupElement);
 }
 
-
-let currentUserId = null;
-
-async function loadProfile() {
-  try {
-    const response = await fetch('https://nomoreparties.co/v1/wff-cohort-41/users/me', {
-      headers: {
-        authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699'
-      }
-    });
-    if (!response.ok) throw new Error(`Ошибка: ${response.status}`);
-
-    const userData = await response.json();
-    currentUserId = userData._id;
-
-    return userData;
-  } 
-  catch (err) {
-    console.error('Ошибка загрузки профиля:', err);
-    throw err;
-  }
-}
+ let currentUserId = null;
 
 async function init() {
-  try {
 
+  try {
     const [profile, cards] = await Promise.all([
       loadProfile(),
       loadCards()
     ]);
-  
+
+    currentUserId = profile._id;
+
+    nameProfileTitle.textContent = profile.name;
+    descriptionProfile.textContent = profile.about;
+    profileImage.style.backgroundImage = `url('${profile.avatar}')`;
+    
+    nameInput.value = profile.name;
+    jobInput.value = profile.about;
+
     cards.forEach(card => {
       const cardElement = createCard(
         card,
@@ -73,7 +76,6 @@ async function init() {
     
   } catch (err) {
     console.error('Ошибка инициализации:', err);
-  
   }
 }
 
@@ -95,32 +97,15 @@ const linkUrl = document.querySelector('.popup__input_type_url');
 const profileImagePopUp = document.querySelector('.popup_type_profile__image');
 const avatarForm = document.forms['edit-avatar'];
 
-async function loadProfileData() {
-  try {
-    const profileData = await getProfileData();
-    
-    nameProfileTitle.textContent = profileData.name;
-    descriptionProfile.textContent = profileData.about;
-    
-    nameInput.value = profileData.name;
-    jobInput.value = profileData.about;
-    
-  } catch (err) {
-    console.error('Ошибка загрузки профиля:', err);
-  }
-}
-
-loadProfileData();
-
 async function profileHandleFormSubmit(evt) {
   evt.preventDefault();
   
   try {
     
     renderLoading(true, profileForm.querySelector('.button'));
-    
     await changeProfileData(nameInput.value, jobInput.value);
-  
+
+    
     nameProfileTitle.textContent = nameInput.value;
     descriptionProfile.textContent = jobInput.value;
   
@@ -134,28 +119,8 @@ async function profileHandleFormSubmit(evt) {
   }
 }
 
-
 profileForm.addEventListener('submit', profileHandleFormSubmit);
 
-async function loadUserData() {
-  try {
-    const response = await fetch('https://nomoreparties.co/v1/wff-cohort-41/users/me', {
-      headers: {
-        authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699'
-      }
-    });
-    
-    if (response.ok) {
-      const user = await response.json();
-      profileImage.style.backgroundImage = `url('${user.avatar}')`;
-      return user;
-    }
-  } catch (err) {
-    console.error('Ошибка загрузки данных:', err);
-  }
-}
-
-loadUserData();
 
 async function handleProfileImageFormSubmit(evt) {
   evt.preventDefault(); 
@@ -182,22 +147,20 @@ finally {
 }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadUserData();
-});
-
-
 profileImagePopUp.addEventListener('submit', handleProfileImageFormSubmit);
 
 profileEditBtn.addEventListener('click', () => {
   nameInput.value = nameProfileTitle.textContent;
   jobInput.value =  descriptionProfile.textContent;
   openPopUp(profilePopUp, profileForm);
- 
+  clearValidation(profileForm, validationConfig);
+  enableValidation(validationConfig);
 });
 
 profileImageWrapper.addEventListener('click', () => {
   openPopUp(profileImagePopUp, profileForm);
+  clearValidation(avatarForm, validationConfig);
+  enableValidation(validationConfig);
 });
 
 
@@ -229,7 +192,11 @@ const profileCardsBtn = document.querySelector('.profile__add-button');
 const profileCardsPopUp = document.querySelector('.popup_type_new-card');
 
 
-profileCardsBtn.addEventListener('click', () => openPopUp(profileCardsPopUp, profileForm));
+profileCardsBtn.addEventListener('click', () =>  {
+  openPopUp(profileCardsPopUp, profileForm);
+  clearValidation(cardForm, validationConfig);
+  enableValidation(validationConfig);
+});
 
 profileCardsPopUp.addEventListener('click', (evt) => {
   if (evt.target === profileCardsPopUp) {
@@ -273,39 +240,14 @@ imagePopUp.addEventListener('click', (evt) => {
   }
 })
 
-// validation
-
-function hasInvalidInput(inputList) {
-  return inputList.some((inputElement) => {
-
-     if (inputElement.value === "") {
-    return !inputElement.validity.valid; 
-  }
-
-    const nameRegex = /^[a-zA-Zа-яА-ЯёЁ\s-]+$/;
-
-    if (inputElement.type === 'text' && (inputElement.name === 'name' || inputElement.name === 'description' || inputElement.name === 'place-name')) {
-      if (!nameRegex.test(inputElement.value)) {
-        showError(inputElement);
-        return true; 
-      }
-    }
-
-    return !inputElement.validity.valid; 
-  });
+function renderLoading(isLoading, button, text = 'Сохранить', loadingText = 'Сохранение...') {
+  button.textContent = isLoading ? loadingText : text;
+  button.disabled = isLoading;
 }
 
-export function toggleButtonState(inputList, buttonElement) {
-  if (hasInvalidInput(inputList)) {
-    buttonElement.disabled = true;
-    buttonElement.classList.add('button_inactive');
-  } else {
-    buttonElement.disabled = false;
-    buttonElement.classList.remove('button_inactive');
-  }
-}
 
-enableValidation();
+
+
 
 
 

@@ -1,115 +1,99 @@
-import {toggleButtonState} from "../index.js"
-
-export function clearValidation(formElement) { 
-  if (!formElement) {
-    return
+function showError(inputElement, errorMessage, config) {
+  const errorElement = document.getElementById(`${inputElement.id}-error`);
+  if (!errorElement) {
+    console.error(`Элемент ошибки для ${inputElement.id} не найден`);
+    return;
   }
-  const inputList = Array.from(formElement.querySelectorAll('.popup__input'));
-  const buttonElement = formElement.querySelector('.popup__button');
-
-  inputList.forEach((inputElement) => {
-    hideError(inputElement); 
-    });
-
-  toggleButtonState(inputList, buttonElement);
+  
+  inputElement.classList.add(config.inputErrorClass);
+  errorElement.textContent = errorMessage;
+  errorElement.classList.add(config.errorClass);
+  errorElement.style.display = 'block';
 }
 
-export const enableValidation = () => {
+function hideError(inputElement, config) {
+  const errorElement = document.getElementById(`${inputElement.id}-error`);
+  if (!errorElement) return;
 
-    const formList = Array.from(document.querySelectorAll('.popup__form'));
-
-    formList.forEach((formElement) => {
-        formElement.addEventListener('submit', (evt) => {
-            evt.preventDefault();
-        });
-
-        setEventListeners(formElement);
-    });
-};
-
- export function showError(elem) {
-  elem.classList.add('popup__input-type-error');
-
-  let errorElem;
-  if (elem.name === 'name') {
-    errorElem = elem.parentNode.querySelector('.edit__profile-name-input-error');
-  } 
-  else if (elem.name === 'description') {
-    errorElem = elem.parentNode.querySelector('.edit__profile-description-input-error');
-  } 
-  else if (elem.name === 'place-name') {
-    errorElem = elem.parentNode.querySelector('.place-name-input-error');
-  }
-  else if (elem.name === 'link') {
-    errorElem = elem.parentNode.querySelector('.link-input-error');
-  }
-
-  if (errorElem) {
-    errorElem.classList.add('form__input-error-active');
-    errorElem.classList.remove('form__input-error');
-
-    let errorMessage = '';
-
-    if (elem.validity.valueMissing) {
-      errorMessage = 'Вы пропустили это поле.';
-    } else if (elem.validity.tooShort) {
-      errorMessage = `Текст должен быть не короче ${elem.minLength} символов. Длина текста сейчас: ${elem.value.length} символ.`;
-    } else if (elem.validity.typeMismatch) { 
-      errorMessage = 'Введите адрес сайта.';
-    } else {
-      errorMessage = 'Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы.';
-    }
-
-    errorElem.textContent = errorMessage;
-  }
+  inputElement.classList.remove(config.inputErrorClass);
+  errorElement.textContent = '';
+  errorElement.classList.remove(config.errorClass);
+  errorElement.style.display = 'none';
 }
 
-
- export function hideError(elem) {
-  elem.classList.remove('popup__input-type-error');
-
-  let errorElem;
-  if (elem.name === 'name') {
-    errorElem = elem.parentNode.querySelector('.edit__profile-name-input-error'); 
-  } 
-  else if (elem.name === 'description') {
-    errorElem = elem.parentNode.querySelector('.edit__profile-description-input-error'); 
-  } else if (elem.name === 'place-name') {
-    errorElem = elem.parentNode.querySelector('.place-name-input-error');
-  } else if (elem.name === 'link') {
-    errorElem = elem.parentNode.querySelector('.link-input-error');
-  }
-
-  if (errorElem) {
-    errorElem.classList.remove('form__input-error-active');
-    errorElem.classList.add('form__input-error');
-    errorElem.textContent = '';
-  }
-}
-
- export function checkInputValidity(inputElement) { 
-
+function checkInputValidity(inputElement, config) {
   if (!inputElement.validity.valid) {
-     showError(inputElement); 
+    showError(inputElement, inputElement.validationMessage, config);
+    return false;
+  }
+  
+  if (inputElement.type === 'text' && config.validationRegex) {
+    if (!config.validationRegex.test(inputElement.value)) {
+      showError(inputElement, config.validationMessages.regexMismatch, config);
+      return false;
+    }
+  }
+  
+  hideError(inputElement, config);
+  return true;
+}
+
+function hasInvalidInput(inputList, config) {  // Добавлен параметр config
+  return inputList.some(inputElement => {
+    const isStandardValid = inputElement.validity.valid;
+    
+    if (inputElement.type === 'text' && config.validationRegex) {
+      return !config.validationRegex.test(inputElement.value) || !isStandardValid;
+    }
+    
+    return !isStandardValid;
+  });
+}
+
+function toggleButtonState(inputList, buttonElement, config) {  // Добавлен параметр config
+  if (hasInvalidInput(inputList, config)) {  // Передаем config
+    buttonElement.classList.add(config.inactiveButtonClass);
+    buttonElement.disabled = true;
   } else {
-     hideError(inputElement); 
+    buttonElement.classList.remove(config.inactiveButtonClass);
+    buttonElement.disabled = false;
   }
 }
 
- export function setEventListeners(formElement) {
+function setEventListeners(formElement, config) {
+  const inputList = Array.from(formElement.querySelectorAll(config.inputSelector));
+  const buttonElement = formElement.querySelector(config.submitButtonSelector);
 
-  const inputList = Array.from(formElement.querySelectorAll('.popup__input'));
-  const buttonElement = formElement.querySelector('.popup__button');
+  toggleButtonState(inputList, buttonElement, config);
 
-  inputList.forEach((inputElement) => {
+  inputList.forEach(inputElement => {
     inputElement.addEventListener('input', () => {
-      checkInputValidity(inputElement); 
-      toggleButtonState(inputList, buttonElement); 
+      checkInputValidity(inputElement, config);
+      toggleButtonState(inputList, buttonElement, config);
+    });
+    
+    inputElement.addEventListener('blur', () => {
+      checkInputValidity(inputElement, config);
     });
   });
-
-  toggleButtonState(inputList, buttonElement);
-
-  
 }
 
+function enableValidation(config) {
+  const formList = Array.from(document.querySelectorAll(config.formSelector));
+  formList.forEach(formElement => {
+    formElement.addEventListener('submit', evt => evt.preventDefault());
+    setEventListeners(formElement, config);
+  });
+}
+
+function clearValidation(formElement, config) {
+  if (!formElement) return;
+
+  const inputList = Array.from(formElement.querySelectorAll(config.inputSelector));
+  const buttonElement = formElement.querySelector(config.submitButtonSelector);
+
+  inputList.forEach(inputElement => hideError(inputElement, config));
+  toggleButtonState(inputList, buttonElement, config);
+}
+
+export { enableValidation, clearValidation };

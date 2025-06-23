@@ -71,9 +71,10 @@
               required
             />
             <span
-              class="edit__profile-name-input-error form__input-error"
+              class="form__input-error form__input-error-active"
               id="name-error"
             ></span>
+
             <input
               type="text"
               name="description"
@@ -85,10 +86,15 @@
               required
             />
             <span
-              class="edit__profile-description-input-error form__input-error"
+              class="form__input-error form__input-error-active"
               id="description-error"
             ></span>
-            <button type="submit" class="button popup__button">
+
+            <button
+              type="submit"
+              class="button popup__button button_inactive"
+              disabled
+            >
               Сохранить
             </button>
           </form>
@@ -121,7 +127,7 @@
         <div class="popup__content">
           <button type="button" class="popup__close"></button>
           <h3 class="popup__title">Новое место</h3>
-          <form class="popup__form" name="new-place">
+          <form class="popup__form" name="new-place" novalidate>
             <input
               type="text"
               name="place-name"
@@ -139,14 +145,14 @@
             <input
               type="url"
               name="link"
-              id="link"
+              id="new-place-link"
               class="popup__input popup__input_type_url"
               placeholder="Ссылка на картинку"
               required
             />
             <span
               class="link-input-error form__input-error"
-              id="link-error"
+              id="new-place-link-error"
             ></span>
             <button type="submit" class="button popup__button">
               Сохранить

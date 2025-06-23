@@ -1,3 +1,5 @@
+import { ownerDeleteCard, loadLikeCounter } from "./api";
+
 export function createCard(cardData, deleteCard, imageClickHandler, likeClickHandler, currentUserId) {
   const cardTemplate = document.querySelector('#card-template');
   const templateElement = cardTemplate.content.cloneNode(true);
@@ -31,21 +33,16 @@ export function createCard(cardData, deleteCard, imageClickHandler, likeClickHan
   deleteBtn.style.display = isOwner ? 'block' : 'none';
 
   if (isOwner) {
-    deleteBtn.addEventListener('click', () => {
-      fetch(`https://nomoreparties.co/v1/wff-cohort-41/cards/${cardData._id}`, {
-        method: 'DELETE',
-        headers: {
-          authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699'
-        }
+  deleteBtn.addEventListener('click', () => {
+    ownerDeleteCard(cardData._id)
+      .then(() => {
+        deleteCard(cardElement); 
       })
-      .then(res => {
-        if (!res.ok) throw new Error(`Ошибка ${res.status}`);
-        return res.json();
-      })
-      .then(() => deleteCard(cardElement))
-      .catch(err => console.error('Ошибка удаления:', err));
-    });
-  }
+      .catch(err => {
+        console.error('Ошибка удаления карточки:', err);
+      });
+  });
+}
 
   cardImage.addEventListener('click', () => imageClickHandler(cardData));
   likeBtn.addEventListener('click', () => likeClickHandler(likeBtn, cardData));
@@ -60,31 +57,18 @@ export function deleteCard(cardElement) {
 export function likeClickHandler(likeButton, cardData) {
   const cardElement = likeButton.closest('.card');
   const likeCounter = cardElement.querySelector('.like__counter');
-  
-  if (!likeCounter) {
-    console.error('Не найден счетчик лайков');
-    return;
-  }
-
   const isLiked = likeButton.classList.contains('card__like-button_is-active');
   
-  
-  likeButton.classList.toggle('card__like-button_is-active');
   likeCounter.textContent = isLiked 
     ? parseInt(likeCounter.textContent) - 1 
     : parseInt(likeCounter.textContent) + 1;
 
 
-  fetch(`https://nomoreparties.co/v1/wff-cohort-41/cards/likes/${cardData._id}`, {
-    method: isLiked ? 'DELETE' : 'PUT',
-    headers: {
-      authorization: '87e6130f-0af7-45ae-9714-ffb68bf1a699'
-    }
-  })
+  loadLikeCounter(cardData._id, isLiked)
+  
   .then(res => {
     if (!res.ok) {
       
-      likeButton.classList.toggle('card__like-button_is-active');
       likeCounter.textContent = isLiked 
         ? parseInt(likeCounter.textContent) + 1 
         : parseInt(likeCounter.textContent) - 1;
@@ -97,6 +81,7 @@ export function likeClickHandler(likeButton, cardData) {
     cardData.likes = updatedCard.likes;
    
     likeCounter.textContent = updatedCard.likes.length;
+    likeButton.classList.toggle('card__like-button_is-active');
   })
   .catch(err => console.error(err));
 }
