@@ -96,13 +96,14 @@ const profileImage = document.querySelector('.profile__image');
 const linkUrl = document.querySelector('.popup__input_type_url');
 const profileImagePopUp = document.querySelector('.popup_type_profile__image');
 const avatarForm = document.forms['edit-avatar'];
+const submitBtn = document.querySelector('.button');
 
-async function profileHandleFormSubmit(evt) {
+async function handleProfileFormSubmit(evt) {
   evt.preventDefault();
   
   try {
     
-    renderLoading(true, profileForm.querySelector('.button'));
+    renderLoading(true, submitBtn);
     await changeProfileData(nameInput.value, jobInput.value);
 
     
@@ -115,11 +116,11 @@ async function profileHandleFormSubmit(evt) {
     console.error('Ошибка сохранения профиля:', err);
     
   } finally {
-    renderLoading(false, profileForm.querySelector('.button'));
+    renderLoading(false, submitBtn);
   }
 }
 
-profileForm.addEventListener('submit', profileHandleFormSubmit);
+profileForm.addEventListener('submit', handleProfileFormSubmit);
 
 
 async function handleProfileImageFormSubmit(evt) {
@@ -129,7 +130,7 @@ async function handleProfileImageFormSubmit(evt) {
   if (!newLink) return
 
 try {
-  renderLoading(true, avatarForm.querySelector('.button'));
+  renderLoading(true, submitBtn);
   const updatedprofileImage = await changeAvatarData(newLink);
 
     profileImage.style.backgroundImage = `url('${updatedprofileImage.avatar}')`;
@@ -143,7 +144,7 @@ catch (err) {
 }
 
 finally {
-  renderLoading(false, avatarForm.querySelector('.button'));
+  renderLoading(false, submitBtn);
 }
 }
 
@@ -215,7 +216,7 @@ cardForm.addEventListener('submit', (evt) => {
   const cardName = cardForm.elements['place-name'].value;
   const linkCard = cardForm.elements.link.value;
 
-  renderLoading(true, cardForm.querySelector('.button')); 
+  renderLoading(true, submitBtn); 
 
   addCardToServer(cardName, linkCard)
     .then(cardData => {
@@ -230,7 +231,7 @@ cardForm.addEventListener('submit', (evt) => {
       console.error('Ошибка создания карточки:', err);
     })
     .finally(() => {
-      renderLoading(false, cardForm.querySelector('.button'));
+      renderLoading(false, submitBtn);
     });
 });
 

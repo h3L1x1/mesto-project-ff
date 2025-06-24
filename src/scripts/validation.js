@@ -38,7 +38,7 @@ function checkInputValidity(inputElement, config) {
   return true;
 }
 
-function hasInvalidInput(inputList, config) {  // Добавлен параметр config
+function hasInvalidInput(inputList, config) {  
   return inputList.some(inputElement => {
     const isStandardValid = inputElement.validity.valid;
     
@@ -50,8 +50,8 @@ function hasInvalidInput(inputList, config) {  // Добавлен параме�
   });
 }
 
-function toggleButtonState(inputList, buttonElement, config) {  // Добавлен параметр config
-  if (hasInvalidInput(inputList, config)) {  // Передаем config
+function toggleButtonState(inputList, buttonElement, config) {  
+  if (hasInvalidInput(inputList, config)) {  
     buttonElement.classList.add(config.inactiveButtonClass);
     buttonElement.disabled = true;
   } else {

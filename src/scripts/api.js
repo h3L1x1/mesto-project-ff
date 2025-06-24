@@ -84,7 +84,7 @@ export  async function loadCards()   {
   return checkResponse(res);
 };
 
-export async function ownerDeleteCard(cardId) {
+export async function deleteOwnerCard(cardId) {
   return fetch(`${config.baseUrl}/cards/${cardId}`, {
         method: 'DELETE',
         headers: config.headers

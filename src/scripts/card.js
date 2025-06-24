@@ -1,4 +1,4 @@
-import { ownerDeleteCard, loadLikeCounter } from "./api";
+import { loadLikeCounter, deleteOwnerCard } from "./api";
 
 export function createCard(cardData, deleteCard, imageClickHandler, likeClickHandler, currentUserId) {
   const cardTemplate = document.querySelector('#card-template');
@@ -34,7 +34,7 @@ export function createCard(cardData, deleteCard, imageClickHandler, likeClickHan
 
   if (isOwner) {
   deleteBtn.addEventListener('click', () => {
-    ownerDeleteCard(cardData._id)
+    deleteOwnerCard(cardData._id)
       .then(() => {
         deleteCard(cardElement); 
       })
@@ -54,34 +54,19 @@ export function deleteCard(cardElement) {
   cardElement.remove();  
 }
 
-export function likeClickHandler(likeButton, cardData) {
+export async function likeClickHandler(likeButton, cardData) {
   const cardElement = likeButton.closest('.card');
   const likeCounter = cardElement.querySelector('.like__counter');
   const isLiked = likeButton.classList.contains('card__like-button_is-active');
   
-  likeCounter.textContent = isLiked 
-    ? parseInt(likeCounter.textContent) - 1 
-    : parseInt(likeCounter.textContent) + 1;
-
-
-  loadLikeCounter(cardData._id, isLiked)
-  
-  .then(res => {
-    if (!res.ok) {
-      
-      likeCounter.textContent = isLiked 
-        ? parseInt(likeCounter.textContent) + 1 
-        : parseInt(likeCounter.textContent) - 1;
-      throw new Error('Ошибка при обновлении лайка');
-    }
-    return res.json();
-  })
-  .then(updatedCard => {
+ try {
+    const updatedCard = await loadLikeCounter(cardData._id, isLiked);
     
     cardData.likes = updatedCard.likes;
-   
     likeCounter.textContent = updatedCard.likes.length;
     likeButton.classList.toggle('card__like-button_is-active');
-  })
-  .catch(err => console.error(err));
+    
+  } catch (err) {
+    console.error('Ошибка при обновлении лайка:', err);
+  }
 }
